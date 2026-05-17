@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Usuários e autenticação ──────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(ANALYST)
+  plan          PlanType  @default(FREE)
+  organization  String?
+  phone         String?
+  avatarUrl     String?
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  refreshTokens  RefreshToken[]
+  auditLogs      AuditLog[]
+  decisionCases  DecisionCase[]
+  alerts         Alert[]
+  loginAttempts  LoginAttempt[]
+
+  @@index([email])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+enum PlanType {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([token])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ip        String
+  email     String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([ip])
+  @@index([email])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  payload   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+}
+
+// ── Subsistema SAD — Processo de Apoio à Decisão ────────────────────
+
+model DecisionCase {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  institution    String?
+  sector         String?
+  classification DecisionClass   @default(OPERATIONAL)
+  status         DecisionStatus  @default(DRAFT)
+  openedAt       DateTime        @default(now())
+  closedAt       DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  f1Problem      F1Problem?
+  f2DataCollection F2DataCollection?
+  f3Alternatives F3Alternative[]
+  f4Voting       F4Voting?
+  f5Register     F5Register?
+  f6Review       F6Review?
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum DecisionClass {
+  STRATEGIC
+  OPERATIONAL
+  TACTICAL
+}
+
+enum DecisionStatus {
+  DRAFT
+  IN_PROGRESS
+  DECIDED
+  IMPLEMENTING
+  REVIEWING
+  CLOSED
+}
+
+model F1Problem {
+  id             String       @id @default(cuid())
+  caseId         String       @unique
+  case           DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  decisionDate   DateTime?
+  deadline       String?
+  decider        String?
+  advisor        String?
+  decisionType   String[]
+  whatDecision   String?
+  context        String?
+  errorImpact    String?
+  constraints    String?
+  effortLevel    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model F2DataCollection {
+  id          String       @id @default(cuid())
+  caseId      String       @unique
+  case        DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  sources     Json?
+  checklist   Json?
+  gaps        String?
+  synthesis   String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model F3Alternative {
+  id            String       @id @default(cuid())
+  caseId        String
+  case          DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  label         String
+  description   String?
+  pros          String?
+  cons          String?
+  risk          RiskLevel?
+  cost          CostLevel?
+  note          Int?
+  isRecommended Boolean      @default(false)
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum CostLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model F4Voting {
+  id                    String       @id @default(cuid())
+  caseId                String       @unique
+  case                  DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  criteria              Json?
+  advisorRecommendation String?
+  chosenAlternativeId   String?
+  divergedFromRec       Boolean?
+  deciderJustification  String?
+  deciderSignature      String?
+  decidedAt             DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+}
+
+model F5Register {
+  id                     String       @id @default(cuid())
+  caseId                 String       @unique
+  case                   DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  reference              String?
+  decisionSummary        String?
+  implementedAlternative String?
+  implementationDeadline String?
+  reviewDeadline         String?
+  communicationChannels  String[]
+  w5h2                   Json?
+  stakeholders           Json?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+}
+
+model F6Review {
+  id                 String       @id @default(cuid())
+  caseId             String       @unique
+  case               DecisionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  reviewDate         DateTime?
+  participants       String?
+  f5Reference        String?
+  reviewAnswers      Json?
+  goalAchieved       String?
+  satisfactionLevel  Int?
+  advisorAdequate    String?
+  whatWorked         String?
+  whatToImprove      String?
+  futureRecs         String?
+  archivedAt         String?
+  reviewerSignature  String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+// ── Alertas de licitação ─────────────────────────────────────────────
+
+model Alert {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  keywords      String[]
+  states        String[]
+  minValue      Float?
+  maxValue      Float?
+  modalities    String[]
+  isActive      Boolean   @default(true)
+  lastCheckedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  matches AlertMatch[]
+}
+
+model AlertMatch {
+  id          String   @id @default(cuid())
+  alertId     String
+  alert       Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  externalId  String
+  title       String
+  entity      String?
+  value       Float?
+  state       String?
+  publishedAt DateTime?
+  url         String?
+  notifiedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([alertId])
+  @@unique([alertId, externalId])
+}
+
+// ── Cache de APIs externas ───────────────────────────────────────────
+
+model ApiCache {
+  id           String   @id @default(cuid())
+  apiName      String
+  endpoint     String
+  params       String?
+  responseData Json
+  cachedAt     DateTime @default(now())
+  expiresAt    DateTime
+
+  @@unique([apiName, endpoint, params])
+  @@index([apiName])
+  @@index([expiresAt])
+}

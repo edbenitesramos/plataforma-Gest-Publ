@@ -1,0 +1,31 @@
+<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Symbol: E as bar chart, B as data nodes, R with arrow leg -->
+  <g transform="translate(8, 10)">
+    <!-- E — horizontal bars like a bar chart -->
+    <rect x="0" y="0" width="16" height="4" rx="1" fill="#0EA5E9"/>
+    <rect x="0" y="8" width="12" height="4" rx="1" fill="#0EA5E9"/>
+    <rect x="0" y="16" width="16" height="4" rx="1" fill="#0EA5E9"/>
+    <rect x="0" y="24" width="9" height="4" rx="1" fill="#0EA5E9"/>
+    <rect x="0" y="32" width="16" height="4" rx="1" fill="#0EA5E9"/>
+
+    <!-- B — vertical spine + two arcs -->
+    <rect x="22" y="0" width="4" height="36" rx="1" fill="#1B2A4A"/>
+    <path d="M26 2 Q38 2 38 10 Q38 18 26 18" stroke="#1B2A4A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M26 18 Q40 18 40 27 Q40 36 26 36" stroke="#1B2A4A" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+    <!-- R — vertical spine + arc + diagonal leg with arrow -->
+    <rect x="46" y="0" width="4" height="36" rx="1" fill="#1B2A4A"/>
+    <path d="M50 2 Q62 2 62 10 Q62 18 50 18" stroke="#1B2A4A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- R leg as arrow -->
+    <line x1="51" y1="18" x2="63" y2="34" stroke="#0EA5E9" stroke-width="4" stroke-linecap="round"/>
+    <polygon points="63,34 56,32 61,27" fill="#0EA5E9"/>
+
+    <!-- Data node connector between E and B -->
+    <circle cx="19" cy="18" r="3" fill="#0EA5E9" opacity="0.6"/>
+    <circle cx="19" cy="18" r="1.5" fill="#0EA5E9"/>
+  </g>
+
+  <!-- Company name -->
+  <text x="85" y="28" font-family="Inter, Arial, sans-serif" font-weight="700" font-size="16" fill="#1B2A4A" letter-spacing="0.5">EBR</text>
+  <text x="85" y="44" font-family="Inter, Arial, sans-serif" font-weight="400" font-size="10" fill="#2D3748" letter-spacing="1.5">CONSULTORIA</text>
+</svg>

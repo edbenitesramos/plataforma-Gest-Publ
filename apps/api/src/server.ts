@@ -18,8 +18,21 @@ const app = Fastify({
 })
 
 async function bootstrap() {
+  // Accept multiple origins: local dev + Vercel preview/prod URLs
+  const allowedOrigins = [
+    env.APP_URL,
+    /\.vercel\.app$/,
+    /localhost:\d+$/,
+  ]
+
   await app.register(cors, {
-    origin: env.APP_URL,
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true) // non-browser clients
+      const allowed = allowedOrigins.some((o) =>
+        typeof o === 'string' ? o === origin : o.test(origin),
+      )
+      cb(null, allowed)
+    },
     credentials: true,
   })
 

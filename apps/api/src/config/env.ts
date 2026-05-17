@@ -3,6 +3,8 @@ import { z } from 'zod'
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(3001),
+  // Railway injects PORT automatically
+  RAILWAY_STATIC_URL: z.string().optional(),
   DATABASE_URL: z.string(),
   REDIS_URL: z.string(),
   JWT_SECRET: z.string(),

@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  push:
+    branches: [claude/add-drive-integration-mZ5y7, main]
+
+jobs:
+  deploy-api:
+    name: Deploy API → Railway
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy API
+        run: |
+          cd apps/api
+          RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN }} railway up --service ebr-api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  deploy-web:
+    name: Deploy Web → Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy Web
+        run: |
+          cd apps/web
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes \
+            -e NEXT_PUBLIC_API_URL=${{ secrets.RAILWAY_API_URL }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -64,7 +64,7 @@ export default function DashboardPage() {
   const { data: alerts } = useSWR('/api/licitacoes/alertas', fetcher)
   const { data: cases } = useSWR('/api/decision?limit=3', fetcher)
 
-  const alertList = (alerts as { id: string; name: string; matches?: unknown[] }[] | undefined) ?? []
+  const alertList = (alerts as { id: string; name: string; isActive?: boolean; matches?: { id: string; entity?: string; title: string; value?: number; state?: string; publishedAt?: string }[] }[] | undefined) ?? []
   const caseList = (cases as { cases?: { id: string; title: string; status: string; updatedAt: string }[] } | undefined)?.cases ?? []
 
   return (
@@ -85,7 +85,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           title="Alertas ativos"
-          value={alertList.filter((a: { isActive?: boolean }) => a.isActive !== false).length}
+          value={alertList.filter((a) => a.isActive !== false).length}
           subtitle="Monitoramento PNCP"
           icon={Bell}
           color="bg-navy"
@@ -180,7 +180,7 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {alertList.flatMap((a: { name: string; matches?: { id: string; entity?: string; title: string; value?: number; state?: string; publishedAt?: string }[] }) =>
+              {alertList.flatMap((a) =>
                 (a.matches ?? []).map((m) => (
                   <tr key={m.id}>
                     <td>{m.entity ?? '—'}</td>
@@ -194,7 +194,7 @@ export default function DashboardPage() {
                   </tr>
                 ))
               )}
-              {alertList.every((a: { matches?: unknown[] }) => !a.matches?.length) && (
+              {alertList.every((a) => !a.matches?.length) && (
                 <tr>
                   <td colSpan={6} className="text-center text-gray-400 py-8">
                     Nenhum resultado ainda. Configure alertas na seção LicitaAlerta.

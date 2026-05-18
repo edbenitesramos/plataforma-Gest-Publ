@@ -1,11 +1,13 @@
 'use client'
 
 interface LogoProps {
-  variant?: 'full' | 'icon' | 'dark'
+  variant?: 'full' | 'icon' | 'dark' | string
   className?: string
 }
 
 export function Logo({ variant = 'full', className = '' }: LogoProps) {
+  const isDark = variant === 'dark'
+
   if (variant === 'icon') {
     return (
       <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="none" className={className || 'h-8 w-8'}>
@@ -15,16 +17,16 @@ export function Logo({ variant = 'full', className = '' }: LogoProps) {
           <rect x="0" y="16" width="16" height="4" rx="1" fill="#0EA5E9"/>
           <rect x="0" y="24" width="9" height="4" rx="1" fill="#0EA5E9"/>
           <rect x="0" y="32" width="16" height="4" rx="1" fill="#0EA5E9"/>
-          <rect x="22" y="0" width="4" height="36" rx="1" fill={variant === 'dark' ? '#fff' : '#1B2A4A'}/>
-          <path d="M26 2 Q38 2 38 10 Q38 18 26 18" stroke={variant === 'dark' ? '#fff' : '#1B2A4A'} strokeWidth="4" fill="none" strokeLinecap="round"/>
-          <path d="M26 18 Q40 18 40 27 Q40 36 26 36" stroke={variant === 'dark' ? '#fff' : '#1B2A4A'} strokeWidth="4" fill="none" strokeLinecap="round"/>
+          <rect x="22" y="0" width="4" height="36" rx="1" fill={isDark ? '#fff' : '#1B2A4A'}/>
+          <path d="M26 2 Q38 2 38 10 Q38 18 26 18" stroke={isDark ? '#fff' : '#1B2A4A'} strokeWidth="4" fill="none" strokeLinecap="round"/>
+          <path d="M26 18 Q40 18 40 27 Q40 36 26 36" stroke={isDark ? '#fff' : '#1B2A4A'} strokeWidth="4" fill="none" strokeLinecap="round"/>
         </g>
       </svg>
     )
   }
 
-  const textColor = variant === 'dark' ? '#FFFFFF' : '#1B2A4A'
-  const subtextColor = variant === 'dark' ? '#CBD5E0' : '#2D3748'
+  const textColor = isDark ? '#FFFFFF' : '#1B2A4A'
+  const subtextColor = isDark ? '#CBD5E0' : '#2D3748'
 
   return (
     <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" fill="none" className={className || 'h-10'}>

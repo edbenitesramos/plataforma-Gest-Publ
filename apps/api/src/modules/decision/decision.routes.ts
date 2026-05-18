@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Prisma } from '@prisma/client'
 import { authenticate } from '../../middleware/auth'
 import { createAuditLog } from '../../middleware/auditLog'
 import { prisma } from '../../config/prisma'
@@ -153,10 +154,14 @@ export async function decisionRoutes(app: FastifyInstance) {
     const existing = await prisma.decisionCase.findFirst({ where: { id, userId: request.user!.sub } })
     if (!existing) return reply.status(404).send({ error: 'Caso não encontrado' })
 
+    const f2Data = {
+      ...body,
+      sources: body.sources as unknown as Prisma.InputJsonValue | undefined,
+    }
     const f2 = await prisma.f2DataCollection.upsert({
       where: { caseId: id },
-      create: { caseId: id, ...body },
-      update: body,
+      create: { caseId: id, ...f2Data },
+      update: f2Data,
     })
 
     return reply.send(f2)
@@ -223,6 +228,7 @@ export async function decisionRoutes(app: FastifyInstance) {
     const data = {
       ...body,
       decidedAt: body.decidedAt ? new Date(body.decidedAt) : undefined,
+      criteria: body.criteria as unknown as Prisma.InputJsonValue | undefined,
     }
 
     const f4 = await prisma.f4Voting.upsert({
@@ -256,10 +262,15 @@ export async function decisionRoutes(app: FastifyInstance) {
     const existing = await prisma.decisionCase.findFirst({ where: { id, userId: request.user!.sub } })
     if (!existing) return reply.status(404).send({ error: 'Caso não encontrado' })
 
+    const f5Data = {
+      ...body,
+      w5h2: body.w5h2 as Prisma.InputJsonValue | undefined,
+      stakeholders: body.stakeholders as unknown as Prisma.InputJsonValue | undefined,
+    }
     const f5 = await prisma.f5Register.upsert({
       where: { caseId: id },
-      create: { caseId: id, ...body },
-      update: body,
+      create: { caseId: id, ...f5Data },
+      update: f5Data,
     })
 
     await prisma.decisionCase.update({ where: { id }, data: { status: 'IMPLEMENTING' } })
@@ -292,6 +303,7 @@ export async function decisionRoutes(app: FastifyInstance) {
     const data = {
       ...body,
       reviewDate: body.reviewDate ? new Date(body.reviewDate) : undefined,
+      reviewAnswers: body.reviewAnswers as unknown as Prisma.InputJsonValue | undefined,
     }
 
     const f6 = await prisma.f6Review.upsert({

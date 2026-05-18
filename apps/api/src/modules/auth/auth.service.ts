@@ -72,7 +72,7 @@ export async function login(input: LoginInput, ip: string) {
   const accessToken = jwt.sign(
     { sub: user.id, role: user.role, plan: user.plan },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN },
+    { expiresIn: env.JWT_EXPIRES_IN as any },
   )
 
   const refreshTokenRaw = uuidv4()
@@ -115,7 +115,7 @@ export async function refresh(refreshTokenRaw: string) {
   const accessToken = jwt.sign(
     { sub: stored.user.id, role: stored.user.role, plan: stored.user.plan },
     env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN },
+    { expiresIn: env.JWT_EXPIRES_IN as any },
   )
 
   return { accessToken }

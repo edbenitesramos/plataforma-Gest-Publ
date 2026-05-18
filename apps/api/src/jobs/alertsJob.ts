@@ -9,7 +9,7 @@ export function startAlertJob() {
     console.log('[AlertJob] Checking PNCP for new licitações...')
     try {
       const result = await fetchPncpToday()
-      const items: Record<string, unknown>[] = (result.data as { data?: unknown[] }).data ?? []
+      const items = ((result.data as { data?: unknown[] }).data ?? []) as Record<string, unknown>[]
 
       const activeAlerts = await prisma.alert.findMany({
         where: { isActive: true },

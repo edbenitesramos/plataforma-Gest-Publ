@@ -1,0 +1,8 @@
+{
+  "name": "ebr-platform",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd apps/api && npm install && npm run build",
+    "start": "cd apps/api && npx prisma migrate deploy && node dist/server.js"
+  }
+}

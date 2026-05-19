@@ -38,7 +38,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Erro desconhecido' }))
-    throw new Error(err.error ?? `HTTP ${res.status}`)
+    throw new Error(err.error ?? err.message ?? `HTTP ${res.status}`)
   }
 
   return res.json()

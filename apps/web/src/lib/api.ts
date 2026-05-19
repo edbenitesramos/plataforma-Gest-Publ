@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://plataforma-gest-publ-production.up.railway.app'
+const API_URL = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://plataforma-gest-publ-production.up.railway.app')
 
 export async function apiFetch<T>(
   path: string,

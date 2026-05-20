@@ -2,14 +2,19 @@ import { NextResponse } from 'next/server'
 
 const BACKEND = 'https://plataforma-gest-publ-production.up.railway.app'
 
-export async function GET() {
+async function probe(path: string) {
   try {
-    const res = await fetch(`${BACKEND}/api/auth/me`, {
+    const res = await fetch(`${BACKEND}${path}`, {
       headers: { 'content-type': 'application/json' },
     })
     const text = await res.text()
-    return NextResponse.json({ reachable: true, status: res.status, body: text.slice(0, 300) })
+    return { status: res.status, body: text.slice(0, 300) }
   } catch (e) {
-    return NextResponse.json({ reachable: false, error: String(e) }, { status: 200 })
+    return { status: null, error: String(e) }
   }
+}
+
+export async function GET() {
+  const [health, me] = await Promise.all([probe('/health'), probe('/api/auth/me')])
+  return NextResponse.json({ backend: BACKEND, health, me })
 }

@@ -1,11 +1,12 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { use, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import toast from 'react-hot-toast'
-import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Loader2, ExternalLink } from 'lucide-react'
 import { api } from '@/lib/api'
+import DriveFilePicker from '@/components/drive/DriveFilePicker'
 
 const fetcher = (url: string) => api.get(url)
 
@@ -19,6 +20,14 @@ const CHECKLIST_ITEMS = [
   { key: 'complete', label: 'Alguma informação crítica ainda está faltando?' },
 ]
 
+interface DriveFileRecord {
+  id: string
+  name: string
+  mimeType: string
+  webViewLink: string | null
+  createdAt: string
+}
+
 export default function F2Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -30,6 +39,26 @@ export default function F2Page({ params }: { params: Promise<{ id: string }> }) 
   const [gaps, setGaps] = useState('')
   const [synthesis, setSynthesis] = useState('')
   const [saving, setSaving] = useState(false)
+  const [driveConnected, setDriveConnected] = useState(false)
+  const [driveFiles, setDriveFiles] = useState<DriveFileRecord[]>([])
+
+  const fetchDriveFiles = useCallback(async () => {
+    try {
+      const files = await api.get<DriveFileRecord[]>(`/api/drive/cases/${id}/files`)
+      setDriveFiles(files)
+    } catch {
+      // ignore — drive may not be configured
+    }
+  }, [id])
+
+  useEffect(() => {
+    api.get<{ connected: boolean }>('/api/drive/status')
+      .then((res) => {
+        setDriveConnected(res.connected)
+        if (res.connected) fetchDriveFiles()
+      })
+      .catch(() => setDriveConnected(false))
+  }, [fetchDriveFiles])
 
   useEffect(() => {
     if (f2) {
@@ -146,6 +175,54 @@ export default function F2Page({ params }: { params: Promise<{ id: string }> }) 
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal resize-none"
             placeholder="Resumo dos dados coletados..." />
         </div>
+      </div>
+
+      {/* Drive files section */}
+      <div className="border-t border-gray-100 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-medium text-gray-800">Arquivos do Drive</h4>
+          {driveConnected && (
+            <DriveFilePicker
+              caseId={id}
+              onAttached={() => fetchDriveFiles()}
+            />
+          )}
+        </div>
+
+        {!driveConnected ? (
+          <p className="text-sm text-gray-400">
+            Conecte o Google Drive em{' '}
+            <a href="/dashboard/configuracoes" className="text-blue-600 hover:underline">
+              Configurações → Integrações
+            </a>{' '}
+            para anexar arquivos a este caso.
+          </p>
+        ) : driveFiles.length === 0 ? (
+          <p className="text-sm text-gray-400">Nenhum arquivo anexado ainda.</p>
+        ) : (
+          <div className="space-y-2">
+            {driveFiles.map((file) => (
+              <div key={file.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div className="flex-1 min-w-0">
+                  {file.webViewLink ? (
+                    <a
+                      href={file.webViewLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline truncate"
+                    >
+                      {file.name}
+                      <ExternalLink size={12} className="flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <span className="text-sm font-medium text-gray-800 truncate">{file.name}</span>
+                  )}
+                  <p className="text-xs text-gray-400 mt-0.5">{file.mimeType}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 pt-2 border-t border-gray-100">

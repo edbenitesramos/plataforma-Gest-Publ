@@ -2,12 +2,14 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
+import multipart from '@fastify/multipart'
 import { env } from './config/env'
 import { redis } from './config/redis'
 import { authRoutes } from './modules/auth/auth.routes'
 import { decisionRoutes } from './modules/decision/decision.routes'
 import { licitacoesRoutes } from './modules/licitacoes/licitacoes.routes'
 import { transparenciaRoutes } from './modules/transparencia/transparencia.routes'
+import { driveRoutes } from './modules/drive/drive.routes'
 import { startAlertJob } from './jobs/alertsJob'
 
 const app = Fastify({
@@ -53,11 +55,18 @@ async function bootstrap() {
     timeWindow: env.RATE_LIMIT_WINDOW_MS,
   })
 
+  await app.register(multipart, {
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50 MB
+    },
+  })
+
   // Routes
   app.register(authRoutes, { prefix: '/api/auth' })
   app.register(decisionRoutes, { prefix: '/api/decision' })
   app.register(licitacoesRoutes, { prefix: '/api/licitacoes' })
   app.register(transparenciaRoutes, { prefix: '/api/transparencia' })
+  app.register(driveRoutes, { prefix: '/api/drive' })
 
   // Health + metrics
   app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }))

@@ -3,6 +3,7 @@
 import useSWR from 'swr'
 import { api } from '@/lib/api'
 import { useAuthStore } from '@/lib/store'
+import DriveConnect from '@/components/drive/DriveConnect'
 
 const fetcher = (url: string) => api.get(url)
 
@@ -72,6 +73,20 @@ export default function ConfiguracoesPage() {
               <p className="text-teal font-medium cursor-pointer hover:underline mt-2">↑ Fazer upgrade do plano</p>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Integrations */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <h3 className="font-semibold text-gray-800 mb-4">Integrações</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-800">Google Drive</p>
+              <p className="text-xs text-gray-400 mt-0.5">Conecte sua conta para anexar e enviar arquivos diretamente nos casos de decisão.</p>
+            </div>
+            <DriveConnect />
+          </div>
         </div>
       </div>
 

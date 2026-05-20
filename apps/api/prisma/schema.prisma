@@ -24,11 +24,16 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+
   refreshTokens  RefreshToken[]
   auditLogs      AuditLog[]
   decisionCases  DecisionCase[]
   alerts         Alert[]
   loginAttempts  LoginAttempt[]
+  driveFiles     DriveFile[]
 
   @@index([email])
 }
@@ -110,6 +115,7 @@ model DecisionCase {
   f4Voting       F4Voting?
   f5Register     F5Register?
   f6Review       F6Review?
+  driveFiles     DriveFile[]
 
   @@index([userId])
   @@index([status])
@@ -276,6 +282,25 @@ model AlertMatch {
 
   @@index([alertId])
   @@unique([alertId, externalId])
+}
+
+model DriveFile {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caseId         String?
+  case           DecisionCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  driveFileId    String
+  name           String
+  mimeType       String
+  webViewLink    String?
+  webContentLink String?
+  iconLink       String?
+  size           BigInt?
+  createdAt      DateTime      @default(now())
+
+  @@index([userId])
+  @@index([caseId])
 }
 
 // ── Cache de APIs externas ───────────────────────────────────────────

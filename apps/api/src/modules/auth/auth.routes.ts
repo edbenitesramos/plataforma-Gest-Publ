@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { z } from 'zod'
 import { authenticate } from '../../middleware/auth'
 import { createAuditLog } from '../../middleware/auditLog'
 import * as authService from './auth.service'
@@ -13,8 +14,8 @@ import {
 function authError(reply: any, err: unknown) {
   const msg = err instanceof Error ? err.message : 'Erro interno do servidor'
   if (msg.includes('IP bloqueado')) return reply.status(429).send({ error: msg })
-  if (msg.includes('Credenciais inválidas') || msg.includes('inválid')) return reply.status(401).send({ error: msg })
-  if (msg.includes('já cadastrado')) return reply.status(409).send({ error: msg })
+  if (msg.includes('Credenciais inválidas') || msg.includes('inválido') || msg.includes('inválida')) return reply.status(401).send({ error: msg })
+  if (msg.includes('já cadastrado') || msg.includes('já possui conta')) return reply.status(409).send({ error: msg })
   throw err
 }
 
@@ -71,5 +72,13 @@ export async function authRoutes(app: FastifyInstance) {
   app.get('/me', { preHandler: authenticate }, async (request, reply) => {
     const user = await authService.getMe(request.user!.sub)
     return reply.send(user)
+  })
+
+  app.post('/accept-invite', async (request, reply) => {
+    try {
+      const { token, password } = z.object({ token: z.string(), password: z.string().min(8) }).parse(request.body)
+      const result = await authService.acceptInvite(token, password)
+      return reply.send(result)
+    } catch (err) { return authError(reply, err) }
   })
 }

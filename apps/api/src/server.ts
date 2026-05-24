@@ -6,6 +6,7 @@ import multipart from '@fastify/multipart'
 import { env } from './config/env'
 import { redis } from './config/redis'
 import { authRoutes } from './modules/auth/auth.routes'
+import { adminRoutes } from './modules/admin/admin.routes'
 import { decisionRoutes } from './modules/decision/decision.routes'
 import { licitacoesRoutes } from './modules/licitacoes/licitacoes.routes'
 import { transparenciaRoutes } from './modules/transparencia/transparencia.routes'
@@ -63,6 +64,7 @@ async function bootstrap() {
 
   // Routes
   app.register(authRoutes, { prefix: '/api/auth' })
+  app.register(adminRoutes, { prefix: '/api/admin' })
   app.register(decisionRoutes, { prefix: '/api/decision' })
   app.register(licitacoesRoutes, { prefix: '/api/licitacoes' })
   app.register(transparenciaRoutes, { prefix: '/api/transparencia' })

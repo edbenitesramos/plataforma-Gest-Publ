@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Scale, FileSearch, Eye, BarChart3,
   Brain, Globe, Settings, User, LogOut, ChevronDown,
-  ChevronRight,
+  ChevronRight, ShieldCheck,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Logo } from '../logo/Logo'
@@ -24,8 +24,10 @@ const subsystems = [
 export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const user = useAuthStore((s) => s.user)
   const setUser = useAuthStore((s) => s.setUser)
   const [subsOpen, setSubsOpen] = useState(pathname.startsWith('/dashboard/') && !pathname.startsWith('/dashboard/decisao'))
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
 
   const navLink = (href: string, icon: React.ElementType, label: string) => {
     const Icon = icon
@@ -73,6 +75,7 @@ export function Sidebar() {
 
         {navLink('/dashboard/decisao', Brain, 'Apoio à Decisão')}
         {navLink('/dashboard/configuracoes', Settings, 'Configurações')}
+        {isAdmin && navLink('/dashboard/admin/usuarios', ShieldCheck, 'Usuários')}
       </nav>
 
       <div className="p-3 border-t border-white/10 space-y-1">

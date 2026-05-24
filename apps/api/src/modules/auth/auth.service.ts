@@ -168,3 +168,29 @@ export async function getMe(userId: string) {
     select: { id: true, name: true, email: true, role: true, plan: true, organization: true, avatarUrl: true, emailVerified: true, createdAt: true },
   })
 }
+
+export async function acceptInvite(token: string, password: string) {
+  const invite = await prisma.invite.findUnique({ where: { token } })
+  if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
+    throw new Error('Convite inválido ou expirado.')
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: invite.email } })
+  if (existing) throw new Error('E-mail já possui conta cadastrada.')
+
+  const passwordHash = await bcrypt.hash(password, env.BCRYPT_SALT_ROUNDS)
+  await prisma.user.create({
+    data: {
+      name: invite.name,
+      email: invite.email,
+      passwordHash,
+      role: invite.role,
+      plan: invite.plan,
+      emailVerified: true,
+      isActive: true,
+    },
+  })
+
+  await prisma.invite.update({ where: { token }, data: { acceptedAt: new Date() } })
+  return { message: 'Conta criada com sucesso. Faça login para continuar.' }
+}

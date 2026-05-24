@@ -10,24 +10,38 @@ import {
   resetPasswordSchema,
 } from './auth.schema'
 
+function authError(reply: any, err: unknown) {
+  const msg = err instanceof Error ? err.message : 'Erro interno do servidor'
+  if (msg.includes('IP bloqueado')) return reply.status(429).send({ error: msg })
+  if (msg.includes('Credenciais inválidas') || msg.includes('inválid')) return reply.status(401).send({ error: msg })
+  if (msg.includes('já cadastrado')) return reply.status(409).send({ error: msg })
+  throw err
+}
+
 export async function authRoutes(app: FastifyInstance) {
   app.post('/register', async (request, reply) => {
-    const body = registerSchema.parse(request.body)
-    const result = await authService.register(body, request.ip)
-    return reply.status(201).send(result)
+    try {
+      const body = registerSchema.parse(request.body)
+      const result = await authService.register(body, request.ip)
+      return reply.status(201).send(result)
+    } catch (err) { return authError(reply, err) }
   })
 
   app.post('/login', async (request, reply) => {
-    const body = loginSchema.parse(request.body)
-    const result = await authService.login(body, request.ip)
-    await createAuditLog(request, 'LOGIN', 'User', result.user.id)
-    return reply.send(result)
+    try {
+      const body = loginSchema.parse(request.body)
+      const result = await authService.login(body, request.ip)
+      await createAuditLog(request, 'LOGIN', 'User', result.user.id)
+      return reply.send(result)
+    } catch (err) { return authError(reply, err) }
   })
 
   app.post('/refresh', async (request, reply) => {
-    const { refreshToken } = refreshSchema.parse(request.body)
-    const result = await authService.refresh(refreshToken)
-    return reply.send(result)
+    try {
+      const { refreshToken } = refreshSchema.parse(request.body)
+      const result = await authService.refresh(refreshToken)
+      return reply.send(result)
+    } catch (err) { return authError(reply, err) }
   })
 
   app.post('/logout', async (request, reply) => {

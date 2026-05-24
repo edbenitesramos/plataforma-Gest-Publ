@@ -16,13 +16,13 @@ async function probe(path: string, options?: RequestInit) {
 }
 
 export async function GET() {
-  const [health, me, login] = await Promise.all([
+  const [health, debug, login] = await Promise.all([
     probe('/health'),
-    probe('/api/auth/me'),
+    probe('/debug'),
     probe('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email: 'demo@ebrconsultoria.com.br', password: 'Demo@2026' }),
     }),
   ])
-  return NextResponse.json({ backend: BACKEND, health, me, login })
+  return NextResponse.json({ backend: BACKEND, health, debug, login })
 }

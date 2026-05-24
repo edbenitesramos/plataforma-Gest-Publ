@@ -75,6 +75,33 @@ async function bootstrap() {
     memory: process.memoryUsage(),
     env: env.NODE_ENV,
   }))
+  app.get('/debug', async () => {
+    const results: Record<string, unknown> = {}
+    try {
+      await redis.ping()
+      results.redis = 'ok'
+    } catch (e) {
+      results.redis = String(e)
+    }
+    try {
+      const { prisma } = await import('./config/prisma')
+      await prisma.$queryRaw`SELECT 1`
+      results.db = 'ok'
+    } catch (e) {
+      results.db = String(e)
+    }
+    try {
+      const { prisma } = await import('./config/prisma')
+      const cols = await prisma.$queryRaw<{column_name: string}[]>`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'User' AND column_name IN ('googleAccessToken','googleRefreshToken','googleTokenExpiry')
+      `
+      results.driveColumns = cols.map((c) => c.column_name)
+    } catch (e) {
+      results.driveColumns = String(e)
+    }
+    return results
+  })
 
   // Error handler
   app.setErrorHandler((error, _request, reply) => {

@@ -45,3 +45,16 @@ export function resetPasswordEmailHtml(name: string, resetUrl: string) {
     <p>O link expira em 1 hora. Se não foi você, ignore este e-mail.</p>
   `
 }
+
+export function inviteEmailHtml(name: string, inviterName: string, inviteUrl: string) {
+  return `
+    <h2>Olá, ${name}!</h2>
+    <p>${inviterName} convidou você para acessar a plataforma EBR Consultoria GovAnalytics.</p>
+    <p>Clique no botão abaixo para definir sua senha e ativar sua conta:</p>
+    <a href="${inviteUrl}" style="background:#0EA5E9;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;margin:16px 0;">
+      Ativar minha conta
+    </a>
+    <p>Este link expira em 48 horas.</p>
+    <p>Se você não esperava este convite, pode ignorar este e-mail.</p>
+  `
+}

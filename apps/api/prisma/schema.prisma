@@ -34,7 +34,25 @@ model User {
   alerts         Alert[]
   loginAttempts  LoginAttempt[]
   driveFiles     DriveFile[]
+  invitesSent    Invite[]
 
+  @@index([email])
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  name        String
+  role        UserRole  @default(ANALYST)
+  plan        PlanType  @default(FREE)
+  token       String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
   @@index([email])
 }
 

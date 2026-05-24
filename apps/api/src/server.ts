@@ -100,6 +100,13 @@ async function bootstrap() {
     } catch (e) {
       results.driveColumns = String(e)
     }
+    try {
+      const { prisma } = await import('./config/prisma')
+      const users = await prisma.user.findMany({ select: { email: true, isActive: true, emailVerified: true } })
+      results.users = users
+    } catch (e) {
+      results.users = String(e)
+    }
     return results
   })
 
